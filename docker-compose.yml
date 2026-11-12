@@ -1,0 +1,14 @@
+# Example: replaces an existing iSponsorBlockTV container and uses its data directory.
+services:
+  isponsorblocktv:
+    image: ghcr.io/kev98710/isponsorblocktv-webui:latest   # or: build: .
+    container_name: isponsorblocktv
+    restart: unless-stopped
+    environment:
+      TZ: Etc/UTC
+      # Enables the login. Required unless the port is only reachable through a protected reverse proxy.
+      # WEBUI_PASSWORD: "change-me"
+    volumes:
+      - ./data:/app/data          # config.json
+    ports:
+      - "8080:8080"               # web interface

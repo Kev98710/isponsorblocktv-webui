@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>iSponsorBlockTV</title>
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="/static/icon.svg" alt="" width="28" height="28">
+      <span>iSponsorBlockTV</span>
+    </div>
+    <div class="status-pill" id="statusPill"><span class="dot"></span><span id="statusText">…</span></div>
+    <div class="top-actions">
+      <select id="langSelect" aria-label="Language"></select>
+      <button class="ghost hidden" id="logoutBtn" data-i18n="auth.logout">Log out</button>
+    </div>
+  </header>
+
+  <!-- Login -->
+  <main id="loginView" class="hidden">
+    <form class="card login" id="loginForm">
+      <h1 data-i18n="auth.title">Sign in</h1>
+      <label for="password" data-i18n="auth.password">Password</label>
+      <input type="password" id="password" autocomplete="current-password" required>
+      <p class="error hidden" id="loginError"></p>
+      <button type="submit" class="primary" data-i18n="auth.login">Sign in</button>
+    </form>
+  </main>
+
+  <!-- App -->
+  <div id="appView" class="hidden">
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="status" data-i18n="tab.status">Status</button>
+      <button class="tab" data-tab="devices" data-i18n="tab.devices">Devices</button>
+      <button class="tab" data-tab="skip" data-i18n="tab.skip">Skipping</button>
+      <button class="tab" data-tab="ads" data-i18n="tab.ads">Ads &amp; playback</button>
+      <button class="tab" data-tab="channels" data-i18n="tab.channels">Channels</button>
+      <button class="tab" data-tab="advanced" data-i18n="tab.advanced">Advanced</button>
+    </nav>
+
+    <main>
+      <div id="problems" class="banner warn hidden"></div>
+
+      <!-- Status -->
+      <section class="panel" data-panel="status">
+        <div class="card">
+          <div class="row between">
+            <h2 data-i18n="status.title">Service</h2>
+            <div class="btn-row">
+              <button id="startBtn" data-i18n="status.start">Start</button>
+              <button id="restartBtn" data-i18n="status.restart">Restart</button>
+              <button id="stopBtn" class="danger-ghost" data-i18n="status.stop">Stop</button>
+            </div>
+          </div>
+          <dl class="facts">
+            <div><dt data-i18n="status.state">State</dt><dd id="factState">–</dd></div>
+            <div><dt data-i18n="status.uptime">Uptime</dt><dd id="factUptime">–</dd></div>
+            <div><dt data-i18n="status.devices">Devices</dt><dd id="factDevices">–</dd></div>
+            <div><dt data-i18n="status.last_exit">Last exit</dt><dd id="factExit">–</dd></div>
+          </dl>
+        </div>
+        <div class="card">
+          <div class="row between">
+            <h2 data-i18n="status.log">Log</h2>
+            <label class="inline"><input type="checkbox" id="autoscroll" checked> <span data-i18n="status.autoscroll">Auto-scroll</span></label>
+          </div>
+          <pre class="log" id="log"></pre>
+        </div>
+      </section>
+
+      <!-- Devices -->
+      <section class="panel hidden" data-panel="devices">
+        <div class="card">
+          <h2 data-i18n="devices.pair_title">Pair a new device</h2>
+          <p class="hint" data-i18n="devices.pair_hint">Open YouTube on your TV → Settings → "Link with TV code" and enter the code shown there.</p>
+          <form id="pairForm" class="pair">
+            <input id="pairCode" inputmode="numeric" autocomplete="off" placeholder="123 456 789 012" required>
+            <input id="pairName" autocomplete="off" data-i18n-placeholder="devices.name_optional" placeholder="Name (optional)">
+            <button type="submit" class="primary" id="pairBtn" data-i18n="devices.pair">Pair</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2 data-i18n="devices.title">Paired devices</h2>
+          <p class="empty hidden" id="noDevices" data-i18n="devices.none">No devices paired yet.</p>
+          <ul class="list" id="deviceList"></ul>
+        </div>
+      </section>
+
+      <!-- Skip categories -->
+      <section class="panel hidden" data-panel="skip">
+        <div class="card">
+          <h2 data-i18n="skip.title">Segments to skip</h2>
+          <p class="hint" data-i18n="skip.hint">Segments are provided by the SponsorBlock community.</p>
+          <div class="checks" id="categoryList"></div>
+        </div>
+        <div class="card">
+          <h2 data-i18n="skip.options">Options</h2>
+          <label class="field">
+            <span data-i18n="skip.min_length">Minimum segment length (seconds)</span>
+            <input type="number" id="minSkip" min="0" max="3600" step="0.5">
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="skipCount">
+            <span><b data-i18n="skip.tracking">Report skipped segments</b><small data-i18n="skip.tracking_hint">Helps SponsorBlock rank segments. Only the segment ID is sent.</small></span>
+          </label>
+        </div>
+        <div class="savebar"><button class="primary" data-save="skip" data-i18n="common.save">Save</button></div>
+      </section>
+
+      <!-- Ads & playback -->
+      <section class="panel hidden" data-panel="ads">
+        <div class="card">
+          <h2 data-i18n="ads.title">YouTube ads</h2>
+          <label class="switch">
+            <input type="checkbox" id="muteAds">
+            <span><b data-i18n="ads.mute">Mute ads</b><small data-i18n="ads.mute_hint">Mutes the TV while a native YouTube ad is playing.</small></span>
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="skipAds">
+            <span><b data-i18n="ads.skip">Skip ads</b><small data-i18n="ads.skip_hint">Presses "Skip ad" as soon as it becomes available.</small></span>
+          </label>
+        </div>
+        <div class="card">
+          <h2 data-i18n="ads.playback">Playback</h2>
+          <label class="switch">
+            <input type="checkbox" id="autoPlay">
+            <span><b data-i18n="ads.autoplay">Autoplay</b><small data-i18n="ads.autoplay_hint">Keep YouTube's autoplay enabled on the TV.</small></span>
+          </label>
+        </div>
+        <div class="savebar"><button class="primary" data-save="ads" data-i18n="common.save">Save</button></div>
+      </section>
+
+      <!-- Channel whitelist -->
+      <section class="panel hidden" data-panel="channels">
+        <div class="card">
+          <h2 data-i18n="channels.title">Channel whitelist</h2>
+          <p class="hint" data-i18n="channels.hint">Nothing is skipped on these channels. Requires a YouTube Data API key (Advanced tab).</p>
+          <p class="banner info hidden" id="needKey" data-i18n="channels.need_key">Add a YouTube API key in the Advanced tab first.</p>
+          <form id="searchForm" class="pair">
+            <input id="searchQuery" autocomplete="off" data-i18n-placeholder="channels.search_placeholder" placeholder="Search channel…">
+            <button type="submit" id="searchBtn" data-i18n="channels.search">Search</button>
+          </form>
+          <ul class="list" id="searchResults"></ul>
+          <details class="manual">
+            <summary data-i18n="channels.manual">Add by channel ID</summary>
+            <form id="manualForm" class="pair">
+              <input id="manualId" autocomplete="off" placeholder="UC…" required>
+              <input id="manualName" autocomplete="off" data-i18n-placeholder="channels.name" placeholder="Name">
+              <button type="submit" data-i18n="channels.add">Add</button>
+            </form>
+          </details>
+        </div>
+        <div class="card">
+          <h2 data-i18n="channels.list">Whitelisted channels</h2>
+          <p class="empty hidden" id="noChannels" data-i18n="channels.none">No channels whitelisted.</p>
+          <ul class="list" id="channelList"></ul>
+        </div>
+        <div class="savebar"><button class="primary" data-save="channels" data-i18n="common.save">Save</button></div>
+      </section>
+
+      <!-- Advanced -->
+      <section class="panel hidden" data-panel="advanced">
+        <div class="card">
+          <h2 data-i18n="adv.apikey">YouTube Data API key</h2>
+          <p class="hint" data-i18n="adv.apikey_hint">Only needed for the channel whitelist. The key is stored in config.json and never shown again.</p>
+          <label class="field">
+            <span id="apikeyState"></span>
+            <input type="password" id="apikey" autocomplete="off" data-i18n-placeholder="adv.apikey_placeholder" placeholder="Leave empty to keep the current key">
+          </label>
+          <label class="inline"><input type="checkbox" id="apikeyDelete"> <span data-i18n="adv.apikey_delete">Remove stored key</span></label>
+        </div>
+        <div class="card">
+          <h2 data-i18n="adv.misc">Miscellaneous</h2>
+          <label class="field">
+            <span data-i18n="adv.join_name">Name shown on the TV</span>
+            <input id="joinName" maxlength="64">
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="useProxy">
+            <span><b data-i18n="adv.proxy">Use system proxy</b><small data-i18n="adv.proxy_hint">Uses HTTP(S)_PROXY from the container environment.</small></span>
+          </label>
+        </div>
+        <div class="savebar"><button class="primary" data-save="advanced" data-i18n="common.save">Save</button></div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span>iSponsorBlockTV WebUI <span id="version"></span></span>
+      <span data-i18n="common.unofficial">Unofficial add-on for iSponsorBlockTV</span>
+    </footer>
+  </div>
+
+  <div class="toast hidden" id="toast" role="status"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
