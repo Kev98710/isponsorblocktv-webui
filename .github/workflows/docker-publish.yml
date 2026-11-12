@@ -24,7 +24,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Image name (GHCR requires lower case)
         run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/isponsorblocktv-webui" >> "$GITHUB_ENV"
